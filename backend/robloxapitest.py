@@ -118,7 +118,6 @@ def getFriends(username):
     data = response.json()
 
     if "data" in data:
-        print(len(data["data"]))
         return data["data"],userId
     else:
         print(response.status_code)
@@ -126,14 +125,14 @@ def getFriends(username):
     
     
 def displayList(playerList):
-    # for user in playerList:
-    #     print(user["name"] + "'s display name: " + user["displayName"] + ", userID: " + str(user["id"]))
-    #     print("image id: " + user["headShotId"])
+    for user in playerList:
+        print(user["name"] + "'s display name: " + user["displayName"] + ", userID: " + str(user["id"]))
+        print("image id: " + user["headShotId"])
 
-    print("number of friends:")
-    print(len(playerList))
+    # print("number of friends:")
+    # print(len(playerList))
 
-targetUsername = "dovx_r3vevr"
+targetUsername = "vq37vhrr"
 friendsRaw,userID = getFriends(targetUsername)
 friendsData = getFriendsData(friendsRaw)
 addAvatarHeadShots(friendsData)
