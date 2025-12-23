@@ -1,0 +1,12 @@
+.base-btn {
+    background-color: rgb(253, 253, 253);
+    padding: 5px;
+    text-align: center;
+    transition-duration: 0.4s;
+    border-radius: 7px;
+}
+
+.outline-dark:hover {
+    background-color: rgb(64, 64, 64);
+    color: white
+}
