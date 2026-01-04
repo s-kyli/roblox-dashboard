@@ -1,8 +1,12 @@
 import requests
 import json
 import time
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 import sys
 
+app = Flask(__name__)
+CORS(app)
 
 def printRateLimits(functionName : str,response : requests.Response):
     print(functionName + " rate limit info:")
@@ -185,24 +189,36 @@ def getFriends(username):
     url = f"https://friends.roblox.com/v1/users/{userId}/friends"
 
     return adaptiveRetryGet("getFriends",url)
-    
-    
-def displayList(playerList):
-    for user in playerList:
-        print(user["name"] + "'s display name: " + user["displayName"] + ", userID: " + str(user["id"]))
-        print("image id: " + user["headShotId"])
 
-    print("number of friends:")
-    print(len(playerList))
-
-targetUsername = "ZMayer1234"
-friendsRaw = getFriends(targetUsername)
-if friendsRaw == None:
-    sys.exit()
-friendsData = getFriendsData(friendsRaw)
-if friendsData == None:
+# made previously 
+def processUserData(username):
+    friendsRaw = getFriends(username)
+    if not friendsRaw:
+        return {"error": "User or friends not found"}
     
-    sys.exit()
-addAvatarHeadShots(friendsData)
-displayList(friendsData)
+    friendsData = getFriendsData(friendsRaw)
+    if not friendsData:
+        return {"error": "Friends data unavailable"}
+        
+    addAvatarHeadShots(friendsData)
+    return friendsData
+    
+@app.route('/api/get-friends', methods=['POST'])
+def handleGetFriends():
+    data = request.json
+    username = data.get('username')
+    
+    if not username:
+        return jsonify({"error": "No username provided"}), 400
 
+    print(f"Processing request for: {username}")
+    
+    result = processUserData(username)
+    
+    return jsonify(result)
+
+if __name__ == '__main__':
+    # testing
+    # targetUsername = "vq37vhrr"
+    # print(processUserData(targetUsername))
+    app.run(debug=True, port=5000)
