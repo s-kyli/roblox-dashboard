@@ -20,6 +20,8 @@ const App = () => {
 
   const hideGraph = () => {
     setShowGraph(false);
+    console.log("resetting username");
+    setUsername("");
   }
 
 
