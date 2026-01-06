@@ -9,18 +9,45 @@ const App = () => {
   const [showAlert, setShowAlert] = useState(false);
   const [timeLeft, setTimeLeft] = useState(81);
   const [username, setUsername] = useState("");
+  const [mainUsername, setMainUsername] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [friendsData, setFriendsData] = useState(null);
 
-  const handleSearch = () => {
-    console.log(username);
+  const handleSearch = async () => {
+    setLoading(true);
+    console.log("SEARCHING FOR USER:", username);
+    setMainUsername(username);
 
     setTimeLeft(timeLeft => timeLeft - 1);
-    setShowAlert(true);// later change this to conditional
-    setShowGraph(true); // change this later
+    // setShowAlert(true);
+
+
+    try {
+      const response = await fetch("http://127.0.0.1:5000/api/get-friends", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username: username }),
+      });
+
+      const returnedData = await response.json();
+      if (returnedData.error) {
+        alert(returnedData.error);
+      } else {
+        setFriendsData(returnedData);
+        console.log(returnedData);
+      }
+
+    } catch (error) {
+      console.error(error);
+    }
+    setShowGraph(true);
+    setLoading(false);
   }
 
   const hideGraph = () => {
     setShowGraph(false);
-    console.log("resetting username");
     setUsername("");
   }
 
@@ -48,7 +75,7 @@ const App = () => {
         </div>
       )}
       {/* <button onClick={hideGraph} >click</button> */}
-      <Graph showGraph={showGraph} setGraphHidden={hideGraph} />
+      <Graph showGraph={showGraph} setGraphHidden={hideGraph} friendsData={friendsData} />
       <StartingScreen handleSearch={handleSearch} username={username} setUsername={setUsername} showGraph={showGraph} />
 
     </div>
