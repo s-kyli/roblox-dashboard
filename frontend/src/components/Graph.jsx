@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import Node from './Node'
 import Button from './Button'
 import Table from 'react-bootstrap/Table';
+import { Image } from "react-bootstrap"
 
 const Graph = ({ showGraph, setGraphHidden, friendsData }) => {
 
@@ -28,37 +29,28 @@ const Graph = ({ showGraph, setGraphHidden, friendsData }) => {
             paddingTop: "15px"
         }}>
 
-
             <h1 style={{ position: "absolute", top: "20px", maxWidth: "50%" }}>hello</h1>
 
-            <Button buttonType={"outline-dark"} onClick={setGraphHidden}> Reset </Button>
+            <Button buttonType={"outline-dark"} onClick={setGraphHidden} > Reset </Button>
             <div style={{ overflowX: 'auto', whiteSpace: 'nowrap' }}>
-                {/* <ListGroup>
-                    {newFriends.map(friend => (
-                        <ListGroup horizontal>
-                            <ListGroup.Item width="30px">user id: {friend.id}</ListGroup.Item>
-                            <ListGroup.Item width="30px">username: {friend.name}</ListGroup.Item>
-                            <ListGroup.Item width="30px">display name: {friend.displayName}</ListGroup.Item>
-                        </ListGroup>
-                    ))}
-                </ListGroup> */}
-
+                {/* this is just for temp */}
                 <Table striped bordered hover>
                     <thead>
                         <tr>
                             <th>user id</th>
                             <th>username</th>
                             <th>display name</th>
-                            {/* <th>avatar headshot</th> */}
+                            <th>avatar headshot</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody >
                         {newFriends.map(friend => (
-                            <tr>
+                            <tr key={friend.id}>
                                 <td>{friend.id}</td>
                                 <td>{friend.name}</td>
                                 <td>{friend.displayName}</td>
-                                {/* <td>{friend.headShotId}</td> */}
+                                <td>{friend.headShotId && (<Image src={friend.headShotId} />)}
+                                </td>
                             </tr>
                         ))}
                     </tbody>
