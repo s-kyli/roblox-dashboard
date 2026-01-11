@@ -3,6 +3,7 @@ import StartingScreen from './components/StartingScreen'
 import Graph from './components/Graph'
 import { useState } from 'react'
 
+
 const App = () => {
 
   const [showGraph, setShowGraph] = useState(false);
@@ -20,6 +21,7 @@ const App = () => {
 
     setTimeLeft(timeLeft => timeLeft - 1);
     // setShowAlert(true);
+    console.log(loading);
 
 
     try {
@@ -76,7 +78,8 @@ const App = () => {
       )}
       {/* <button onClick={hideGraph} >click</button> */}
       <Graph showGraph={showGraph} setGraphHidden={hideGraph} friendsData={friendsData} />
-      <StartingScreen handleSearch={handleSearch} username={username} setUsername={setUsername} showGraph={showGraph} />
+      <StartingScreen handleSearch={handleSearch} username={username}
+        setUsername={setUsername} showGraph={showGraph} loading={loading} />
 
     </div>
   )

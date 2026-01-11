@@ -1,9 +1,11 @@
 import React from 'react'
 import "./Button.css"
 
-function Button({ children, buttonType, onClick }) {
+function Button({ children, buttonType, onClick, hide }) {
     return (
-        <button className={`base-btn ${buttonType}`} onClick={onClick} >{children}</button>
+        <button style={{ display: hide ? "none" : "" }} className={`base-btn ${buttonType}`} onClick={onClick}>
+            {children}
+        </button>
     )
 }
 
