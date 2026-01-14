@@ -1,6 +1,6 @@
 import React from 'react'
 import StartingScreen from './components/StartingScreen'
-import Graph from './components/Graph'
+import Graph from './components/GraphView'
 import { useState } from 'react'
 
 
@@ -10,14 +10,12 @@ const App = () => {
   const [showAlert, setShowAlert] = useState(false);
   const [timeLeft, setTimeLeft] = useState(81);
   const [username, setUsername] = useState("");
-  const [mainUsername, setMainUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [friendsData, setFriendsData] = useState(null);
 
   const handleSearch = async () => {
     setLoading(true);
     console.log("SEARCHING FOR USER:", username);
-    setMainUsername(username);
 
     setTimeLeft(timeLeft => timeLeft - 1);
     // setShowAlert(true);
@@ -51,6 +49,7 @@ const App = () => {
   const hideGraph = () => {
     setShowGraph(false);
     setUsername("");
+    setFriendsData(null);
   }
 
 
@@ -77,7 +76,12 @@ const App = () => {
         </div>
       )}
       {/* <button onClick={hideGraph} >click</button> */}
-      <Graph showGraph={showGraph} setGraphHidden={hideGraph} friendsData={friendsData} />
+      <Graph
+        showGraph={showGraph}
+        setGraphHidden={hideGraph}
+        friendsData={friendsData}
+        mainUsername={username}
+      />
       <StartingScreen handleSearch={handleSearch} username={username}
         setUsername={setUsername} showGraph={showGraph} loading={loading} />
 
