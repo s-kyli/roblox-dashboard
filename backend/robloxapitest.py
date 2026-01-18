@@ -182,24 +182,29 @@ def getFriends(username):
 
     userData = getUserData(username)
     if userData == None:
-        return
+        return None, None
 
     userId = userData[0]["id"]
 
     url = f"https://friends.roblox.com/v1/users/{userId}/friends"
 
-    return adaptiveRetryGet("getFriends",url)
+    return adaptiveRetryGet("getFriends",url),userData
 
 # made previously 
 def processUserData(username):
-    friendsRaw = getFriends(username)
-    if not friendsRaw:
+    friendsRaw,userData = getFriends(username)
+    if not friendsRaw or not userData:
         return {"error": "User or friends not found"}
     
     friendsData = getFriendsData(friendsRaw)
     if not friendsData:
         return {"error": "Friends data unavailable"}
-        
+    
+    userData = userData[0]
+    del userData["requestedUsername"]
+    friendsData.append(userData)
+    print(friendsData[-1])
+
     addAvatarHeadShots(friendsData)
     return friendsData
     

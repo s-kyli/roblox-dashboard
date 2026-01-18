@@ -1,14 +1,15 @@
 import React from 'react'
 import "./Button.css"
 
-function Button({ children, buttonType, onClick, hide, position, zIndex, padding }) {
+function Button({ children, buttonType, onClick, hide, position, zIndex, padding, margin }) {
     return (
         <button
             style={{
                 display: hide ? "none" : "",
                 position: position,
                 zIndex: zIndex,
-                padding: padding
+                padding: padding,
+                margin: margin,
             }}
             className={`base-btn ${buttonType}`}
             onClick={onClick}
