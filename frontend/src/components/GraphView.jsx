@@ -2,37 +2,110 @@
 import Button from './Button'
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import ForceGraph3D from "react-force-graph-3d"
-import * as THREE from 'three'
+import { ObjectLoader } from 'three';
 import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+import { useImmer } from "use-immer"
 
 
-const GraphView = ({ showGraph, setGraphHidden, friendsData, mainUsername }) => {
+const GraphView = ({ showGraph, setGraphHidden, friendsData, setFriendsData, newFriends, setNewFriends,
+    usernameSearchingFor, mainUsername, searchFromNode, onStartPage, setOnStartPage, rootNodes, setRootNodes }) => {
 
-    const [graphData, setGraphData] = useState({ nodes: [], links: [] });
+    const [graphData, setGraphData] = useImmer({ nodes: [], links: [] });
+    const mutableGraphData = useMemo(() => {
+        if (!graphData) return { nodes: [], links: [] };
+        return structuredClone(graphData);
+    }, [graphData]);
+
     const option = { height: "100%", width: "100%" }
     const fgRef = useRef()
     const selectedNode = useRef(null)
     const renderer = useMemo(() => [new CSS2DRenderer()], [])
 
+    const addToDictionary = (setFunc, key, value) => {
+        setFunc(draft => {
+            draft[key] = value;
+        });
+    };
+
     useEffect(() => {
         if (fgRef.current) {
             fgRef.current.d3Force("charge").strength(-1000)
             fgRef.current.d3Force("link").distance(300)
-            console.log("spacing out")
         }
     }, [graphData])
 
     useEffect(() => {
+        if (!newFriends || !usernameSearchingFor) {
+            return
+        }
+
+        if (Object.keys(newFriends).length === 0) {
+            return
+        }
+
+        const sourceUser = friendsData[usernameSearchingFor];
+        if (!sourceUser) {
+            console.error("Source user not found in dictionary:", usernameSearchingFor);
+            return;
+        }
+
+
+        const newNodes = []
+        const newConns = []
+
+        for (const [name, friend] of Object.entries(newFriends)) {
+
+            if (name == mainUsername) { continue }
+            if (!friendsData[name]) {
+                newNodes.push({
+                    id: friend.id,
+                    name: name,
+                    val: 5,
+                    img: friend.headShotId,
+                    displayName: friend.displayName,
+                    verified: friend.hasVerifiedBadge
+                })
+            }
+            console.log(friendsData[usernameSearchingFor].id, friend.id)
+            newConns.push({ source: friendsData[usernameSearchingFor].id, target: friend.id })
+        }
+
+        setRootNodes(draft => {
+            draft[usernameSearchingFor] = friendsData[usernameSearchingFor]
+        })
+
+        setGraphData(draft => {
+            draft.nodes.push(...newNodes)
+            draft.links.push(...newConns)
+        })
+        setFriendsData(draft => {
+            Object.assign(draft, newFriends)
+        })
+        setNewFriends({})
+
+
+
+    }, [newFriends])
+
+    useEffect(() => {
+
+        if (!onStartPage) {
+            console.log(graphData.nodes, graphData.links)
+            console.log("returning onstartpage")
+            return
+        }
 
         if (!friendsData || !mainUsername) {
             setGraphData({ nodes: [], links: [] })
             return
         }
 
+        if (Object.keys(friendsData).length === 0) {
+            return
+        }
 
-        console.log("friendsData changegd")
+        const mainUser = friendsData[mainUsername]
 
-        const mainUser = friendsData[friendsData.length - 1]
         const newNodes = [{
             id: mainUser.id,
             name: mainUsername,
@@ -45,12 +118,11 @@ const GraphView = ({ showGraph, setGraphHidden, friendsData, mainUsername }) => 
 
         const newConns = []
 
-        friendsData.forEach((friend) => {
-
-            if (friend.name != mainUsername) {
+        for (const [name, friend] of Object.entries(friendsData)) {
+            if (name != mainUsername) {
                 newNodes.push({
                     id: friend.id,
-                    name: friend.name,
+                    name: name,
                     val: 5,
                     img: friend.headShotId,
                     displayName: friend.displayName,
@@ -58,15 +130,23 @@ const GraphView = ({ showGraph, setGraphHidden, friendsData, mainUsername }) => 
                 })
                 newConns.push({ source: mainUser.id, target: friend.id })
             }
+        }
+
+        setRootNodes(draft => {
+            draft[mainUsername] = mainUser
+        })
+
+        setGraphData(draft => {
+            draft.nodes.push(...newNodes)
+            draft.links.push(...newConns)
         })
 
         setGraphData({ nodes: newNodes, links: newConns })
+        setOnStartPage(false)
 
     }, [friendsData])
 
-    const findPath = (node) => {
 
-    }
 
     const resetNode = (node) => {
         const oldData = node.nodeData
@@ -89,6 +169,7 @@ const GraphView = ({ showGraph, setGraphHidden, friendsData, mainUsername }) => 
         `
     }
 
+    // generate html for when you click on one specific node
     const generateExpandedHtml = (node) => {
         return `
             <div style="background: rgba(0, 0, 0, 0.8); padding: 15px; border-radius: 12px; border: 1px solid #444; width: 200px; text-align: center; backdrop-filter: blur(4px);">
@@ -102,12 +183,20 @@ const GraphView = ({ showGraph, setGraphHidden, friendsData, mainUsername }) => 
                 <p style="color: #ffffff; font-size: 12px; margin: 0 0 10px 0; cursor: text;">
                     ID: ${node.id}
                 </p>
-                <button id="close-btn-${node.id}"" style="padding: 5px 10px; cursor: pointer; border: none; border-radius: 4px;">
+                ${!rootNodes[node.name]
+                ? `<button id="search-btn-${node.id}"" style="background: #0077ffb5; color:white; padding: 5px 10px; cursor: pointer; border: none; border-radius: 4px;">
+                            Search Friends
+                        </button>`
+                : ""
+            }
+                <button id="close-btn-${node.id}"" style="background: #ff0000b3; color:white; padding: 5px 10px; margin-top: 10px; cursor: pointer; border: none; border-radius: 4px;">
                     Close
                 </button>
             </div>
         `
     }
+
+
 
     return (
         <div className="m-0" style={{
@@ -133,16 +222,37 @@ const GraphView = ({ showGraph, setGraphHidden, friendsData, mainUsername }) => 
                 <ForceGraph3D
 
                     ref={fgRef}
-                    graphData={graphData}
+                    graphData={mutableGraphData}
                     extraRenderers={renderer}
                     nodeThreeObject={(node) => {
                         const nodeEl = document.createElement("div")
+
+                        const unexpandNode = (e) => {
+                            e.stopPropagation()
+                            resetNode(nodeEl)
+                            selectedNode.current = null;
+                        }
 
                         nodeEl.innerHTML = generateHtml(node)
                         nodeEl.style.pointerEvents = "auto"
                         nodeEl.style.cursor = "pointer"
 
-                        nodeEl.onclick = () => {
+                        nodeEl.onclick = async (e) => {
+
+                            e.stopPropagation()
+
+                            if (e.target.closest(`#close-btn-${node.id}`)) {
+                                console.log("pressing close button")
+                                unexpandNode(e)
+                                return
+                            }
+
+                            if (e.target.closest(`#search-btn-${node.id}`)) {
+                                console.log("search")
+                                await searchFromNode(node.name)
+                                unexpandNode(e)
+                                return
+                            }
 
                             if (selectedNode.current == nodeEl) { return }
 
@@ -159,24 +269,7 @@ const GraphView = ({ showGraph, setGraphHidden, friendsData, mainUsername }) => 
                             nodeEl.onpointerdown = (event) => {
                                 event.stopPropagation()
                             }
-
-                            setTimeout(() => {
-                                const closeBtn = document.getElementById(`close-btn-${node.id}`)
-                                if (closeBtn) {
-                                    closeBtn.onclick = (e) => {
-                                        e.stopPropagation()
-                                        resetNode(nodeEl)
-                                        selectedNode.current = null;
-                                    }
-                                }
-                            }, 0)
                         }
-
-
-                        // const button = document.createElement("button")
-                        // button.style.textAlign = "center"
-                        // button.textContent = node.name
-                        // button.onclick = () => {alert}
 
                         nodeEl.nodeData = node
                         return new CSS2DObject(nodeEl)

@@ -203,10 +203,16 @@ def processUserData(username):
     userData = userData[0]
     del userData["requestedUsername"]
     friendsData.append(userData)
-    print(friendsData[-1])
 
     addAvatarHeadShots(friendsData)
-    return friendsData
+
+    hashmap = dict()
+
+    for friendData in friendsData:
+        name = friendData.pop("name")
+        hashmap[name] = friendData
+
+    return hashmap
     
 @app.route('/api/get-friends', methods=['POST'])
 def handleGetFriends():

@@ -2,6 +2,8 @@ import React from 'react'
 import StartingScreen from './components/StartingScreen'
 import Graph from './components/GraphView'
 import { useState } from 'react'
+import { useImmer } from "use-immer"
+
 
 
 const App = () => {
@@ -9,39 +11,73 @@ const App = () => {
   const [showGraph, setShowGraph] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [timeLeft, setTimeLeft] = useState(81);
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState(""); // main username (root node)
+  const [usernameSearchingFor, setUsernameSearchingFor] = useState("") // username when searching from node (not root)
   const [loading, setLoading] = useState(false);
-  const [friendsData, setFriendsData] = useState(null);
+  const [friendsData, setFriendsData] = useImmer({});
+  const [newFriends, setNewFriends] = useImmer({});
+  const [rootNodes, setRootNodes] = useImmer({})
+  const [onStartPage, setOnStartPage] = useState(true)
+  const [mutuals, setMutuals] = useImmer({});
 
-  const handleSearch = async () => {
-    setLoading(true);
-    console.log("SEARCHING FOR USER:", username);
-
-    setTimeLeft(timeLeft => timeLeft - 1);
-    // setShowAlert(true);
-    console.log(loading);
-
-
+  const apiRequestPy = async (usernameToSearch) => {
     try {
       const response = await fetch("http://127.0.0.1:5000/api/get-friends", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username: username }),
+        body: JSON.stringify({ username: usernameToSearch }),
       });
 
       const returnedData = await response.json();
-      if (returnedData.error) {
-        alert(returnedData.error);
-      } else {
-        setFriendsData(returnedData);
-        console.log(returnedData);
-      }
+      console.log(returnedData)
+      return returnedData
 
     } catch (error) {
       console.error(error);
     }
+  }
+
+  const handleSearchFromNode = async (nodeUsername) => {
+    setLoading(true);
+    console.log("SEARCHING FOR USER FROM NODE:", nodeUsername)
+    setUsernameSearchingFor(nodeUsername)
+
+    const returnedData = await apiRequestPy(nodeUsername)
+
+    if (returnedData.error) {
+      alert(returnedData.error);
+    } else {
+      setNewFriends(returnedData);
+    }
+
+    setLoading(false)
+  }
+
+  const handleSearch = async () => {
+    setLoading(true);
+    console.log("SEARCHING FOR USER:", username);
+
+    // setTimeLeft(timeLeft => timeLeft - 1);
+    const returnedData = await apiRequestPy(username)
+    if (returnedData.error) {
+      alert(returnedData.error);
+    } else {
+      if (!returnedData[username]) {
+        for (const [name, friend] of Object.entries(returnedData)) {
+          if (username.toLowerCase() === name.toLowerCase()) {
+            setUsername(name)
+            break
+          }
+        }
+      } else {
+        setUsername(username)
+      }
+
+      setFriendsData(returnedData);
+    }
+
     setShowGraph(true);
     setLoading(false);
   }
@@ -49,7 +85,14 @@ const App = () => {
   const hideGraph = () => {
     setShowGraph(false);
     setUsername("");
-    setFriendsData(null);
+    setFriendsData({});
+    setNewFriends({})
+    setRootNodes({})
+    setLoading(false)
+    setUsernameSearchingFor("")
+
+
+    setOnStartPage(true)
   }
 
 
@@ -80,7 +123,16 @@ const App = () => {
         showGraph={showGraph}
         setGraphHidden={hideGraph}
         friendsData={friendsData}
+        setFriendsData={setFriendsData}
         mainUsername={username}
+        usernameSearchingFor={usernameSearchingFor}
+        searchFromNode={handleSearchFromNode}
+        newFriends={newFriends}
+        setNewFriends={setNewFriends}
+        onStartPage={onStartPage}
+        setOnStartPage={setOnStartPage}
+        rootNodes={rootNodes}
+        setRootNodes={setRootNodes}
       />
       <StartingScreen handleSearch={handleSearch} username={username}
         setUsername={setUsername} showGraph={showGraph} loading={loading} />
