@@ -8,9 +8,9 @@ import { useImmer } from "use-immer"
 
 const App = () => {
 
+  const [timeLeft, setTimeLeft] = useState(81);
   const [showGraph, setShowGraph] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(81);
   const [username, setUsername] = useState(""); // main username (root node)
   const [usernameSearchingFor, setUsernameSearchingFor] = useState("") // username when searching from node (not root)
   const [loading, setLoading] = useState(false);
@@ -18,7 +18,18 @@ const App = () => {
   const [newFriends, setNewFriends] = useImmer({});
   const [rootNodes, setRootNodes] = useImmer({})
   const [onStartPage, setOnStartPage] = useState(true)
-  const [mutuals, setMutuals] = useImmer({});
+
+  const hideGraph = () => {
+    setShowGraph(false);
+    setUsername("");
+    setUsernameSearchingFor("")
+    setFriendsData({});
+    setNewFriends({})
+    setRootNodes({})
+    setLoading(false)
+    setUsernameSearchingFor("")
+    setOnStartPage(true)
+  }
 
   const apiRequestPy = async (usernameToSearch) => {
     try {
@@ -47,7 +58,11 @@ const App = () => {
     const returnedData = await apiRequestPy(nodeUsername)
 
     if (returnedData.error) {
-      alert(returnedData.error);
+      if (returnedData.error == 429) {
+        alert("Hit rate limit. Please wait around 2 minutes for the rate limit to reset. Sorry for the inconvenience.")
+      } else {
+        alert(returnedData.error);
+      }
     } else {
       setNewFriends(returnedData);
     }
@@ -76,24 +91,12 @@ const App = () => {
       }
 
       setFriendsData(returnedData);
+      setShowGraph(true);
     }
-
-    setShowGraph(true);
     setLoading(false);
   }
 
-  const hideGraph = () => {
-    setShowGraph(false);
-    setUsername("");
-    setFriendsData({});
-    setNewFriends({})
-    setRootNodes({})
-    setLoading(false)
-    setUsernameSearchingFor("")
 
-
-    setOnStartPage(true)
-  }
 
 
 

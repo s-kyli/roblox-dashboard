@@ -11,21 +11,16 @@ const GraphView = ({ showGraph, setGraphHidden, friendsData, setFriendsData, new
     usernameSearchingFor, mainUsername, searchFromNode, onStartPage, setOnStartPage, rootNodes, setRootNodes }) => {
 
     const [graphData, setGraphData] = useImmer({ nodes: [], links: [] });
+    const [nodeMoveTo, setNodeMoveTo] = useState("")
     const mutableGraphData = useMemo(() => {
         if (!graphData) return { nodes: [], links: [] };
         return structuredClone(graphData);
     }, [graphData]);
-
-    const option = { height: "100%", width: "100%" }
+    const [loading, setLoading] = useState(false)
     const fgRef = useRef()
     const selectedNode = useRef(null)
     const renderer = useMemo(() => [new CSS2DRenderer()], [])
-
-    const addToDictionary = (setFunc, key, value) => {
-        setFunc(draft => {
-            draft[key] = value;
-        });
-    };
+    const [componentKey, setComponentKey] = useState(0)
 
     useEffect(() => {
         if (fgRef.current) {
@@ -66,7 +61,7 @@ const GraphView = ({ showGraph, setGraphHidden, friendsData, setFriendsData, new
                     verified: friend.hasVerifiedBadge
                 })
             }
-            console.log(friendsData[usernameSearchingFor].id, friend.id)
+            // console.log(friendsData[usernameSearchingFor].id, friend.id)
             newConns.push({ source: friendsData[usernameSearchingFor].id, target: friend.id })
         }
 
@@ -97,10 +92,19 @@ const GraphView = ({ showGraph, setGraphHidden, friendsData, setFriendsData, new
 
         if (!friendsData || !mainUsername) {
             setGraphData({ nodes: [], links: [] })
+            setComponentKey(prev => prev + 1)
             return
         }
 
         if (Object.keys(friendsData).length === 0) {
+            setGraphData({ nodes: [], links: [] })
+            setNodeMoveTo("")
+            setLoading(false)
+            selectedNode.current = null
+            if (selectedNode.current) {
+                selectedNode.current = null
+            }
+            setComponentKey(prev => prev + 1)
             return
         }
 
@@ -146,7 +150,23 @@ const GraphView = ({ showGraph, setGraphHidden, friendsData, setFriendsData, new
 
     }, [friendsData])
 
+    const moveToNode = () => {
 
+        const node = mutableGraphData.nodes.find(n => n.name.toLowerCase() === nodeMoveTo.toLowerCase())
+        if (!node) { return }
+        const distance = 100
+        const distRatio = 1 + distance / Math.hypot(node.x, node.y, node.z)
+        const newPos = node.x || node.y || node.z
+            ? { x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio }
+            : { x: 0, y: 0, z: distance }
+
+        console.log(node.x, node.y, node.z)
+        fgRef.current.cameraPosition(
+            newPos,
+            node,
+            3000,
+        )
+    }
 
     const resetNode = (node) => {
         const oldData = node.nodeData
@@ -208,19 +228,50 @@ const GraphView = ({ showGraph, setGraphHidden, friendsData, setFriendsData, new
             alignItems: "center",
             justifyContent: "center",
         }}>
-            <Button
-                buttonType={"outline-dark"}
-                onClick={setGraphHidden}
-                position={"absolute"}
-                zIndex={100}
-                padding={"5px"}
-                margin="10px"
+            <div
+                className='search-container'
+                style={{
+                    display: "flex",
+                    transform: "translateX(-50%)",
+                    zIndex: 1000,
+                    padding: "5px",
+                    margin: "auto",
+                    position: "absolute",
+                    left: "50%",
+                    alignItems: "center",
+                    gap: "10px",
+                    width: "fit-content",
+                }}
             >
-                Reset
-            </Button>
+                <Button
+                    buttonType={"outline-dark"}
+                    onClick={setGraphHidden}
+                    height={"4vh"}
+                    padding={"0px"}
+                >
+                    Reset
+                </Button>
+
+                <p
+                    style={{
+                        htmlFor: "search-container",
+                        color: "white",
+                        margin: "0"
+                    }}
+                >
+                    Search for node:
+                </p>
+
+                <input style={{ borderRadius: "7px", width: "40%", margin: 0 }} type="search" id="search-container" value={nodeMoveTo}
+                    onChange={(e) => setNodeMoveTo(e.target.value)}></input>
+
+                <Button padding={"0px"} height={"4vh"} onClick={moveToNode} buttonType="outline-dark">Search</Button>
+            </div>
+
+
             {graphData.nodes.length > 0 && (
                 <ForceGraph3D
-
+                    key={componentKey}
                     ref={fgRef}
                     graphData={mutableGraphData}
                     extraRenderers={renderer}
@@ -248,9 +299,12 @@ const GraphView = ({ showGraph, setGraphHidden, friendsData, setFriendsData, new
                             }
 
                             if (e.target.closest(`#search-btn-${node.id}`)) {
+                                if (loading) { return }
+                                setLoading(true)
                                 console.log("search")
                                 await searchFromNode(node.name)
                                 unexpandNode(e)
+                                setLoading(false)
                                 return
                             }
 

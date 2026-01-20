@@ -1,7 +1,7 @@
 import requests
 import json
 import time
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify # type: ignore
 from flask_cors import CORS
 import sys
 
@@ -17,6 +17,24 @@ def printRateLimits(functionName : str,response : requests.Response):
     if response.status_code == 429:
         print("429 hit rate limit for: " + functionName)
         print(response.text)
+
+def requestNoRetryPOST(functionName : str, url: str, request):
+    response = requests.post(url,json=request)
+    data = response.json()
+    if "data" in data:
+        print(f"{functionName} was successful, returning")
+        return data["data"]
+    else:
+        return response.status_code
+    
+def requestNoRetryGET(url : str):
+    response = requests.get(url)
+    data = response.json()
+
+    if "data" in data:
+        return data["data"]
+    else:
+        return response.status_code
 
 # if hit rate limit, we will get the number of seconds until roblox's quota resets wait wait that much time.
 # if there is no timer or the timer is suspiciously low (say under 10 seconds), 
@@ -92,7 +110,7 @@ def getUserData(username):
         "excludeBannedUsers" : True
     }
 
-    return adaptiveRetry("getUserData",url,request)
+    return requestNoRetryPOST("getUserData",url,request)
     
 # gets the links of all the friends of a specific username
 # thumbnails.roblox.com/v/batch only allows 100 users per request so we will be doing batches for every 100 users
@@ -132,12 +150,17 @@ def addAvatarHeadShots(playerData):
         if len(requestBatches[i]) == 0:
             continue
 
-        data = adaptiveRetry(f"addAvatarHeadshots batch {i}",url,requestBatches[i])
+        data = requestNoRetryPOST(f"addAvatarHeadshots batch {i}",url,requestBatches[i])
         
-        if data:
+        if not isinstance(data,int):
             for user in data:
                 playerData[count]["headShotId"] = user["imageUrl"]
                 count += 1
+        else:
+            return data # return error code
+    return "Successful"
+        
+        
 
 # gets the data of all the friends of a specific user. rawFriendsData only holds each friend's user id,
 # so we need to get each friend's name and displayname.
@@ -168,12 +191,12 @@ def getFriendsData(rawFriendsData):
             "userIds" : batch,
         }
 
-        data = adaptiveRetry(f"getFriendsData (batch)",url,request)
+        data = requestNoRetryPOST(f"getFriendsData (batch)",url,request)
         
-        if data:
+        if not isinstance(data,int):
             returnData = returnData + data
         else:
-            print("data is not there")
+            return data
 
     return returnData
 
@@ -183,28 +206,41 @@ def getFriends(username):
     userData = getUserData(username)
     if userData == None:
         return None, None
-
+    if isinstance(userData,int):
+        return userData,None
+    
+    if len(userData) == 0:
+        return None,None
+    
     userId = userData[0]["id"]
 
     url = f"https://friends.roblox.com/v1/users/{userId}/friends"
 
-    return adaptiveRetryGet("getFriends",url),userData
+    return requestNoRetryGET(url),userData
 
 # made previously 
 def processUserData(username):
     friendsRaw,userData = getFriends(username)
-    if not friendsRaw or not userData:
-        return {"error": "User or friends not found"}
+    if isinstance(friendsRaw,int):
+        return {"error": friendsRaw,"function" : "friendsRaw, getFriends",}
+    if isinstance(userData,int):
+        return {"error": userData,"function" : "userData, getFriends"}
+    
+    if userData == None:
+        return {"error": "userdata is not available","function" : "userData, getFriends"}
     
     friendsData = getFriendsData(friendsRaw)
-    if not friendsData:
-        return {"error": "Friends data unavailable"}
+    if isinstance(friendsData,int):
+        return {"error": friendsData,"function" : "friendsData, getFriendsData"}
     
     userData = userData[0]
     del userData["requestedUsername"]
     friendsData.append(userData)
 
-    addAvatarHeadShots(friendsData)
+    result = addAvatarHeadShots(friendsData)
+
+    if result != "Successful":
+        return {"error": result,"function" : "result, addAvatarRHeadshots"}
 
     hashmap = dict()
 
@@ -221,11 +257,12 @@ def handleGetFriends():
     
     if not username:
         return jsonify({"error": "No username provided"}), 400
+    if len(username) < 3:
+        return jsonify({"error": "Username must be at least 3 characters long"}),400
 
     print(f"Processing request for: {username}")
     
     result = processUserData(username)
-    
     return jsonify(result)
 
 if __name__ == '__main__':
