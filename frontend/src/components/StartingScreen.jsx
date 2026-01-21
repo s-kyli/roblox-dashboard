@@ -18,7 +18,7 @@ const StartingScreen = ({ handleSearch, username, setUsername, showGraph, loadin
       justifyContent: "center"
     }}>
 
-      <h1 htmlFor="username-search">Roblox Friends Social Graph</h1>
+      <h1 htmlFor="username-search">Roblox Friends Graph</h1>
       <p htmlFor="username-search">Type in your (or anyone else's) username, then click search!</p>
       <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
         <input style={{ borderRadius: "7px", padding: "5px" }} type="search" id="username-search" value={username}
