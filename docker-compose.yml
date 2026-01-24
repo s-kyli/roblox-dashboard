@@ -3,15 +3,12 @@ services:
     build: ./backend
     ports:
       - "5000:5000"
-    volumes:
-      - ./backend:/app
+    restart: always
 
   frontend:
     build: ./frontend
     ports:
-      - "5173:5173"
+      - "5173:80"
+    restart: always
     depends_on:
       - backend
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
