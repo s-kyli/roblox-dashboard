@@ -11,10 +11,10 @@ This is a personal project of mine that visualizes Roblox friends as an interact
 
 To use the app, you just need to search someone's Roblox username. It will generate a Force 3D graph of all of their friends. You can then click on one of the friend nodes and search for their friends
 This expands the graph (and also shows two Roblox users' mutual friends in the middle):
-![alt text](image.png)
+![alt-text](readmeImgs/image.png)
 
 You can expand the graph as much as you want, and see who is friends with who.
-![alt text](image-2.png)
+![image2](readmeImgs/image-2.png)
 
 **How to run locally**
 1. Run git clone on with the https web url.
