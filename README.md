@@ -17,10 +17,10 @@ You can expand the graph as much as you want, and see who is friends with who.
 ![image2](readmeImgs/image-2.png)
 
 **How to run locally**
-1. Run git clone on with the https web url.
-2. Make sure you have docker installed!!
+1. Make sure you have docker installed!!
+2. Run `git clone https://github.com/s-kyli/roblox-dashboard.git` in your terminal.
 3. In the folder that contains `docker-compose.yml`, run `docker compose up --build` in the terminal.
-4. Once it is finished building paste `localhost:5173` into a browser tab.
+4. Once it is finished building, paste `localhost:5173` into a browser tab.
 
 **Note**: this app does not work with privacy browsers like Librewolf.
 
