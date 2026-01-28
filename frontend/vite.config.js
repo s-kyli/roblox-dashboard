@@ -10,7 +10,24 @@ export default defineConfig({
       },
     }),
   ],
+  optimizeDeps: {
+    include: ['react-force-graph-3d', 'three', 'force-graph']
+  },
   build: {
-    minify: false
+    minify: false,
+    commonjsOptions: {
+      include: [/node_modules/],
+      transformMixedEsModules: true
+    },
+    rollupOptions: {
+      // 4. Ensure 'three' is bundled correctly
+      output: {
+        manualChunks: {
+          three: ['three']
+        }
+      }
+    }
   }
+
+
 })
