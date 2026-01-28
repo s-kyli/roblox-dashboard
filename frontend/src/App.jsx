@@ -4,7 +4,7 @@ import Graph from './components/GraphView'
 import { useState } from 'react'
 import { useImmer } from "use-immer"
 
-
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const App = () => {
 
@@ -33,7 +33,7 @@ const App = () => {
 
   const apiRequestPy = async (usernameToSearch) => {
     try {
-      const response = await fetch("http://127.0.0.1:5000/api/get-friends", {
+      const response = await fetch(`${apiUrl}/api/get-friends`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
