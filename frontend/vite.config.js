@@ -20,7 +20,6 @@ export default defineConfig({
       transformMixedEsModules: true
     },
     rollupOptions: {
-      // 4. Ensure 'three' is bundled correctly
       output: {
         manualChunks: {
           three: ['three']
