@@ -13,6 +13,11 @@ export default defineConfig({
   optimizeDeps: {
     include: ['react-force-graph-3d', 'three', 'force-graph']
   },
+  resolve: {
+    alias: {
+      three: resolve(__dirname, './node_modules/three')
+    }
+  },
   build: {
     minify: false,
     commonjsOptions: {
