@@ -8,6 +8,8 @@ const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const App = () => {
 
+  document.title = "RoFriends Graph"
+
   const [timeLeft, setTimeLeft] = useState(81);
   const [showGraph, setShowGraph] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
