@@ -18,5 +18,7 @@ export default defineConfig({
     exclude: ['react-force-graph-3d', 'force-graph', 'three']
   },
 
-
+  build: {
+    minify: false,
+  }
 })
