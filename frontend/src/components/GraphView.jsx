@@ -2,7 +2,6 @@
 import Button from './Button'
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import ForceGraph3D from "react-force-graph-3d"
-import { ObjectLoader } from 'three';
 import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 import { useImmer } from "use-immer"
 

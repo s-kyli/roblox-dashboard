@@ -1,4 +1,3 @@
-import React from 'react'
 import StartingScreen from './components/StartingScreen'
 import Graph from './components/GraphView'
 import { useState } from 'react'

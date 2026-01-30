@@ -1,4 +1,3 @@
-import React from 'react'
 import "./Button.css"
 
 function Button({ children, buttonType, onClick, hide, position, zIndex, padding, margin, height }) {
