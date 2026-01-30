@@ -15,16 +15,8 @@ export default defineConfig({
     }),
   ],
   optimizeDeps: {
-    include: ['react-force-graph-3d', 'force-graph', 'three'],
-    exclude: []
+    exclude: ['react-force-graph-3d', 'force-graph', 'three']
   },
-  build: {
-    minify: false,
-    commonjsOptions: {
-      include: [/node_modules/],
-      transformMixedEsModules: true
-    }
-  }
 
 
 })
