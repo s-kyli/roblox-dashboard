@@ -4,7 +4,7 @@ import Graph from './components/GraphView'
 import { useState } from 'react'
 import { useImmer } from "use-immer"
 
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const apiUrl = import.meta.env.PROD ? '' : 'http://localhost:5000';
 
 const App = () => {
 
