@@ -2,6 +2,8 @@
 
 This is a personal project of mine that visualizes Roblox friends as an interactable force-directed graph.
 
+You can try it out here: [RoFriends Graph](https://rofriendsgraph.kyleliii.me/)
+
 **Tech stack**
 * Frontend: React, React Force Graph 3D, Vite
 * Backend: Python, Flask, Roblox Cloud API
