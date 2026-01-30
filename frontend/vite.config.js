@@ -15,7 +15,7 @@ export default defineConfig({
     }),
   ],
   optimizeDeps: {
-    include: ['react-force-graph-3d', 'force-graph'],
+    include: ['react-force-graph-3d', 'force-graph', 'three'],
     exclude: []
   },
   build: {
